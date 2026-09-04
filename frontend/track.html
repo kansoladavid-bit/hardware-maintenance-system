@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Track My Request - Hardware Maintenance</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header>
+  <h1>Hardware Maintenance Request System</h1>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="report.html">Report a Problem</a>
+    <a href="login.html">Admin Login</a>
+  </nav>
+</header>
+
+<div class="container">
+  <div class="card">
+    <h2>Track Your Request</h2>
+    <p>Enter the reference code you received when you submitted your request (e.g. HMR-2026-0001).</p>
+    <label for="refCode">Reference Code</label>
+    <input type="text" id="refCode" placeholder="HMR-2026-0001" />
+    <button id="trackBtn">Check Status</button>
+    <div id="trackResult"></div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/track.js"></script>
+</body>
+</html>

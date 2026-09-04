@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Login - Hardware Maintenance</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header>
+  <h1>Hardware Maintenance Request System</h1>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="report.html">Report a Problem</a>
+  </nav>
+</header>
+
+<div class="container" style="max-width:420px;">
+  <div class="card">
+    <h2>Admin / Technician Login</h2>
+    <form id="loginForm">
+      <label for="username">Username</label>
+      <input type="text" id="username" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" required />
+
+      <button type="submit">Login</button>
+      <div id="loginMessage"></div>
+    </form>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/login.js"></script>
+</body>
+</html>
