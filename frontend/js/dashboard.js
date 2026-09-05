@@ -30,7 +30,7 @@ async function loadStats() {
 }
 async function loadRequests() {
   const tbody = document.getElementById('requestsTableBody');
-  tbody.innerHTML = `<tr><td colspan="9">Loading...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="10">Loading...</td></tr>`;
 
   const status = document.getElementById('filterStatus').value;
   const priority = document.getElementById('filterPriority').value;
@@ -50,7 +50,7 @@ async function loadRequests() {
     const data = await res.json();
 
     if (data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9">No requests found.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10">No requests found.</td></tr>`;
       return;
     }
     tbody.innerHTML = data.map(r => `
@@ -63,6 +63,10 @@ async function loadRequests() {
         <td style="text-transform:capitalize;">${r.priority}</td>
         <td><span class="badge ${r.status}">${r.status.replace('_',' ')}</span></td>
         <td>${new Date(r.created_at).toLocaleDateString()}</td>
+        <td>
+          <textarea id="notes-${r.id}" rows="2" style="width:160px;font-size:12px;">${r.technician_notes || ''}</textarea>
+          <button style="font-size:11px;padding:4px 8px;margin-top:4px;" onclick="saveNotes(${r.id})">Save Notes</button>
+        </td>
         <td class="actions">
           <select onchange="updateStatus(${r.id}, this.value)">
             <option value="">Change status...</option>
@@ -76,9 +80,28 @@ async function loadRequests() {
     `).join('');
   } catch (err) {
     console.error(err);
-    tbody.innerHTML = `<tr><td colspan="9">Could not connect to the server.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10">Could not connect to the server.</td></tr>`;
   }
 }
+async function saveNotes(id) {
+  const notes = document.getElementById(`notes-${id}`).value;
+  try {
+    const res = await fetch(`${API_BASE_URL}/requests/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ technician_notes: notes })
+    });
+    if (res.status === 401 || res.status === 403) return handleAuthError();
+    alert('Notes saved.');
+  } catch (err) {
+    console.error(err);
+    alert('Could not save notes.');
+  }
+}
+
 async function updateStatus(id, status) {
   if (!status) return;
   try {
@@ -98,7 +121,6 @@ async function updateStatus(id, status) {
     alert('Could not update status.');
   }
 }
-
 async function deleteRequest(id) {
   if (!confirm('Are you sure you want to delete this request?')) return;
   try {
