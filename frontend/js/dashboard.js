@@ -1,7 +1,6 @@
 const token = localStorage.getItem('hms_token');
 const username = localStorage.getItem('hms_username');
 
-// Guard: if not logged in, send back to login page
 if (!token) {
   window.location.href = 'login.html';
 }
@@ -14,7 +13,6 @@ document.getElementById('logoutLink').addEventListener('click', function (e) {
   localStorage.removeItem('hms_username');
   window.location.href = 'login.html';
 });
-
 async function loadStats() {
   try {
     const res = await fetch(`${API_BASE_URL}/requests/stats`, {
@@ -30,10 +28,9 @@ async function loadStats() {
     console.error(err);
   }
 }
-
 async function loadRequests() {
   const tbody = document.getElementById('requestsTableBody');
-  tbody.innerHTML = `<tr><td colspan="8">Loading...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="9">Loading...</td></tr>`;
 
   const status = document.getElementById('filterStatus').value;
   const priority = document.getElementById('filterPriority').value;
@@ -53,14 +50,14 @@ async function loadRequests() {
     const data = await res.json();
 
     if (data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8">No requests found.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9">No requests found.</td></tr>`;
       return;
     }
-
     tbody.innerHTML = data.map(r => `
       <tr>
         <td>${r.reference_code}</td>
         <td>${r.reporter_name}</td>
+        <td>${r.contact_info || '-'}</td>
         <td>${r.equipment_name}</td>
         <td>${r.location}</td>
         <td style="text-transform:capitalize;">${r.priority}</td>
@@ -79,10 +76,9 @@ async function loadRequests() {
     `).join('');
   } catch (err) {
     console.error(err);
-    tbody.innerHTML = `<tr><td colspan="8">Could not connect to the server.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9">Could not connect to the server.</td></tr>`;
   }
 }
-
 async function updateStatus(id, status) {
   if (!status) return;
   try {

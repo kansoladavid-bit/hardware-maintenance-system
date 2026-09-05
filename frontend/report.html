@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-
 <header>
   <h1>Hardware Maintenance Request System</h1>
   <nav>
@@ -16,39 +15,33 @@
     <a href="login.html">Admin Login</a>
   </nav>
 </header>
-
 <div class="container">
   <div class="card">
     <h2>Report a Hardware Problem</h2>
     <form id="reportForm">
       <label for="reporter_name">Your Full Name</label>
       <input type="text" id="reporter_name" required />
-
       <label for="department">Department / Class</label>
       <input type="text" id="department" placeholder="e.g. ICT Department" />
-
+      <label for="contact_info">Phone Number or Email</label>
+      <input type="text" id="contact_info" placeholder="e.g. 0755123456 or you@email.com" required />
       <label for="equipment_name">Equipment Name</label>
       <input type="text" id="equipment_name" placeholder="e.g. HP Desktop Computer" required />
-
       <label for="location">Location / Room</label>
       <input type="text" id="location" placeholder="e.g. Computer Lab 2" required />
-
       <label for="priority">Priority</label>
       <select id="priority">
         <option value="low">Low</option>
         <option value="medium" selected>Medium</option>
         <option value="high">High</option>
       </select>
-
       <label for="issue_description">Describe the Problem</label>
       <textarea id="issue_description" required></textarea>
-
       <button type="submit">Submit Request</button>
       <div id="formMessage"></div>
     </form>
   </div>
 </div>
-
 <script src="js/config.js"></script>
 <script src="js/report.js"></script>
 </body>

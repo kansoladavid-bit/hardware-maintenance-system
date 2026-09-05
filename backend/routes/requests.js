@@ -3,7 +3,6 @@ const router = express.Router();
 const pool = require('../db');
 const requireAdmin = require('../middleware/auth');
 
-// Generate a simple human-friendly reference code like HMR-2026-0001
 function generateReferenceCode(id) {
   const year = new Date().getFullYear();
   return `HMR-${year}-${String(id).padStart(4, '0')}`;
@@ -12,16 +11,16 @@ function generateReferenceCode(id) {
 // POST /api/requests  -> anyone can submit a request (no login needed)
 router.post('/', async (req, res) => {
   try {
-    const { reporter_name, department, equipment_name, location, issue_description, priority } = req.body;
+    const { reporter_name, department, equipment_name, location, issue_description, priority, contact_info } = req.body;
 
     if (!reporter_name || !equipment_name || !location || !issue_description) {
       return res.status(400).json({ error: 'reporter_name, equipment_name, location and issue_description are required.' });
     }
 
     const insertResult = await pool.query(
-      `INSERT INTO requests (reference_code, reporter_name, department, equipment_name, location, issue_description, priority)
-       VALUES ('TEMP', $1, $2, $3, $4, $5, $6) RETURNING id`,
-      [reporter_name, department || null, equipment_name, location, issue_description, priority || 'medium']
+      `INSERT INTO requests (reference_code, reporter_name, department, equipment_name, location, issue_description, priority, contact_info)
+       VALUES ('TEMP', $1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+      [reporter_name, department || null, equipment_name, location, issue_description, priority || 'medium', contact_info || null]
     );
 
     const newId = insertResult.rows[0].id;
@@ -39,7 +38,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /api/requests/track/:reference_code -> requester checks their own request status (no login)
 router.get('/track/:reference_code', async (req, res) => {
   try {
     const { reference_code } = req.params;
@@ -54,7 +52,6 @@ router.get('/track/:reference_code', async (req, res) => {
   }
 });
 
-// GET /api/requests -> admin only, list all requests, supports filters
 router.get('/', requireAdmin, async (req, res) => {
   try {
     const { status, priority, search } = req.query;
@@ -84,7 +81,6 @@ router.get('/', requireAdmin, async (req, res) => {
   }
 });
 
-// GET /api/requests/stats -> admin only, dashboard counts
 router.get('/stats', requireAdmin, async (req, res) => {
   try {
     const result = await pool.query(`
@@ -102,7 +98,6 @@ router.get('/stats', requireAdmin, async (req, res) => {
   }
 });
 
-// PATCH /api/requests/:id -> admin only, update status/notes
 router.patch('/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -128,7 +123,6 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// DELETE /api/requests/:id -> admin only
 router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
