@@ -195,3 +195,4 @@ th { background: #f9fafb; }
 
 .hero .buttons a.primary { background: var(--primary); color: white; }
 .hero .buttons a.secondary { background: white; color: var(--primary); border: 1px solid var(--primary); }
+.logo { display: flex; align-items: center; gap: 10px; }
