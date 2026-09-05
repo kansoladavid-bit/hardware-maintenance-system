@@ -2,6 +2,11 @@
 
 A simple web-based system for reporting, tracking, and managing hardware maintenance requests (computers, printers, projectors, network equipment, etc.) — built as an Industrial Practical Training (IPT) / Field project for the MUST ICT Course.
 
+
+## Live Demo
+
+- **Frontend:** https://dreamy-heliotrope-24d47a.netlify.app
+- **Backend API:** https://hardware-maintenance-system.onrender.com
 ## Overview
 
 The system has two sides:
