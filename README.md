@@ -1,83 +1,66 @@
 # Hardware Maintenance Request System
 
-Mfumo wa kuripoti na kufuatilia ukarabati wa vifaa (computers, printers, projectors).
+A simple web-based system for reporting, tracking, and managing hardware maintenance requests (computers, printers, projectors, network equipment, etc.) — built as an Industrial Practical Training (IPT) / Field project for the MUST ICT Course.
 
-## Muundo wa mradi
-```
-hardware-maintenance-system/
-├── backend/        (Express + PostgreSQL/Supabase API)
-└── frontend/        (HTML/CSS/JS - inayoongea na backend)
-```
+## Overview
 
-## HATUA 0: Tatua tatizo la PowerShell (fanya hii kwanza)
+The system has two sides:
 
-Kama umepata error "UnauthorizedAccess / PSSecurityException" kwenye VS Code terminal:
+- **Requesters** (students/staff) — report a broken piece of equipment without needing an account, and track the status of their request later using a reference code.
+- **Admin/Technician** — logs in securely to view all requests, filter/search them, update status, add technician notes, and delete resolved/duplicate entries.
 
-1. Fungua terminal kwenye VS Code
-2. Andika amri hii MOJA TU, kisha Enter:
-   ```
-   Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
-   ```
-3. Ikikuuliza "Do you want to change the execution policy?" andika `Y` kisha Enter
-4. Sasa PowerShell itakubali kuendesha npm. Endelea na hatua zilizo chini.
+## Tech Stack
 
-## HATUA 1: Weka faili hizi kwenye kompyuta yako
+- **Backend:** Node.js, Express.js
+- **Database:** PostgreSQL (hosted on Supabase)
+- **Frontend:** Plain HTML, CSS, and vanilla JavaScript (no framework)
+- **Authentication:** JWT (JSON Web Tokens) + bcrypt password hashing
+- **Version control:** Git + GitHub
 
-1. Pakua (download) zip niliyokutengenezea
-2. Ondoa kwenye zip (extract) mahali fulani, mfano Desktop
-3. Fungua hiyo folder kwenye VS Code (File → Open Folder)
+## Features
 
-## HATUA 2: Sakinisha backend
+- Submit a maintenance request without login (auto-generates a unique reference code, e.g. `HMR-2026-0001`)
+- Track request status anytime using the
+## Project Structure
 
-Kwenye terminal ya VS Code:
-```
+## Database Schema
+
+Two tables (see `backend/schema.sql`):
+
+- **admins** — id, username, password_hash, created_at
+- **requests** — id, reference_code, reporter_name, department, contact_info, equipment_name, location, issue_description, priority, status, technician_notes, created_at, updated_at (auto-updated via trigger)
+## Setup Instructions
+
+### 1. Install backend dependencies
+
+```bash
 cd backend
 npm install
-```//dakika 1-2, itapakua packages zote (express, pg, bcryptjs, n.k.)
-
-## HATUA 3: Unda Supabase project
-
-1. Nenda https://supabase.com → login → "New Project"
-2. Jaza jina (mfano: hardware-maintenance-system) na password ya database (ihifadhi mahali salama)
-3. Ukishaunda, nenda **SQL Editor** (upande wa kushoto)
-4. Fungua faili `backend/schema.sql` iliyoko kwenye mradi wako, copy content yake yote
-5. Bandika kwenye SQL Editor ya Supabase, bofya **Run**
-6. Nenda **Project Settings → Database** → copy "Connection string" (URI) — hii ndiyo `DATABASE_URL` yako
-
-## HATUA 4: Jaza .env
-
-1. Kwenye folder ya `backend/`, badilisha jina la faili `.env.example` kuwa `.env`
-2. Fungua `.env`, jaza:
-   - `DATABASE_URL` = ile uliyochukua kutoka Supabase (badilisha [YOUR-PASSWORD] na password yako halisi)
-   - `JWT_SECRET` = andika neno lolote refu la siri (mfano: `msifiche_hii_2026_hms`)
-   - Acha `PORT` na `ALLOWED_ORIGIN` kama zilivyo
-
-## HATUA 5: Anzisha backend
-
 ```
-npm run dev
-```
-Ukiona "Server running on http://localhost:5000" — backend inafanya kazi! ✅
 
-## HATUA 6: Tengeneza akaunti ya kwanza ya admin
+### 2. Set up the database (Supabase)
 
-Backend ikiwa inaendesha, fungua terminal NYINGINE (bofya "+" kwenye terminal panel), kisha:
-```
-curl -X POST http://localhost:5000/api/auth/register -H "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"admin123\"}"
-```
-(Badilisha username/password kwa utakavyo. Hii ndiyo utakavyoingia kwenye dashboard.)
+1. Create a free project at [supabase.com](https://supabase.com)
+2. Open the **SQL Editor**, paste the contents of `backend/schema.sql`, and run it — this creates the `admins` and `requests` tables
+3. Go to **Project Settings → Database**, copy the **Connection string (URI)** — this is your `DATABASE_URL`
 
-## HATUA 7: Anzisha frontend
+### 3. Configure environment variables
 
-1. Kwenye VS Code, sakinisha extension ya **"Live Server"** (kama huna) kutoka Extensions tab
-2. Bofya kwenye `frontend/index.html`
-3. Bofya kulia (right-click) → **"Open with Live Server"**
-4. Ukurasa utafunguka kwenye browser (http://127.0.0.1:5500 au 5500)
+Copy `backend/.env.example` to `backend/.env` and fill in:
+## Usage
 
-## Kutumia mfumo
-- **Watumiaji wa kawaida**: `index.html` → "Report a Problem" → jaza fomu → wanapata reference code
-- **Kufuatilia**: "Track My Request" → weka reference code
-- **Admin**: "Admin Login" → tumia username/password ulizotengeneza Hatua 6 → dashboard inaonyesha maombi yote, unaweza kubadilisha status
+- **Report a problem:** Home → "Report a Problem" → fill the form → save the reference code shown
+- **Track a request:** Home → "Track My Request" → enter the reference code
+- **Admin:** "Admin Login" → dashboard shows all requests with filters, status updates, technician notes, and delete
 
-## Endapo backend na frontend zinatumia port tofauti
-Kama Live Server inatumia 127.0.0.1:5500 badala ya localhost:5500, hakikisha `.env` yako `ALLOWED_ORIGIN` inalingana (backend/server.js tayari inaruhusu zote mbili by default).
+## Security Notes
+
+- Passwords are hashed with bcrypt before storage — never stored in plain text
+- Admin sessions use JWT tokens (8-hour expiry)
+- The `/api/auth/register` endpoint is disabled after initial setup to prevent unauthorized admin account creation
+- `.env` (containing `DATABASE_URL` and `JWT_SECRET`) is excluded from version control via `.gitignore`
+- CORS restricts API access to the configured frontend origin(s) only
+
+## Author
+
+David Kansola — MUST ICT Course, Industrial Practical Training (IPT) project
