@@ -101,15 +101,37 @@ router.get('/stats', requireAdmin, async (req, res) => {
 router.patch('/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, technician_notes } = req.body;
+    const {
+      status,
+      technician_notes,
+      reporter_name,
+      contact_info,
+      equipment_name,
+      location,
+      priority
+    } = req.body;
 
     const result = await pool.query(
       `UPDATE requests
        SET status = COALESCE($1, status),
-           technician_notes = COALESCE($2, technician_notes)
-       WHERE id = $3
+           technician_notes = COALESCE($2, technician_notes),
+           reporter_name = COALESCE($3, reporter_name),
+           contact_info = COALESCE($4, contact_info),
+           equipment_name = COALESCE($5, equipment_name),
+           location = COALESCE($6, location),
+           priority = COALESCE($7, priority)
+       WHERE id = $8
        RETURNING *`,
-      [status || null, technician_notes || null, id]
+      [
+        status || null,
+        technician_notes || null,
+        reporter_name || null,
+        contact_info || null,
+        equipment_name || null,
+        location || null,
+        priority || null,
+        id
+      ]
     );
 
     if (result.rows.length === 0) {
