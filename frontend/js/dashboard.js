@@ -13,6 +13,10 @@ document.getElementById('logoutLink').addEventListener('click', function (e) {
   localStorage.removeItem('hms_username');
   window.location.href = 'login.html';
 });
+
+// holds the currently loaded requests so downloadExcel()/editRequest() can find them by id
+let currentRequests = [];
+
 async function loadStats() {
   try {
     const res = await fetch(`${API_BASE_URL}/requests/stats`, {
@@ -48,6 +52,7 @@ async function loadRequests() {
     if (res.status === 401 || res.status === 403) return handleAuthError();
 
     const data = await res.json();
+    currentRequests = data;
 
     if (data.length === 0) {
       tbody.innerHTML = `<tr><td colspan="10">No requests found.</td></tr>`;
@@ -74,7 +79,9 @@ async function loadRequests() {
             <option value="in_progress" ${r.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
             <option value="resolved" ${r.status === 'resolved' ? 'selected' : ''}>Resolved</option>
           </select>
+          <button style="font-size:11px;padding:4px 8px;margin-top:4px;background:#0d6efd;color:#fff;border:none;border-radius:4px;cursor:pointer;" onclick="editRequest(${r.id})">Edit</button>
           <button class="danger" onclick="deleteRequest(${r.id})">Delete</button>
+          <button style="font-size:11px;padding:4px 8px;margin-top:4px;background:#1e7e34;color:#fff;border:none;border-radius:4px;cursor:pointer;" onclick="downloadExcel(${r.id})">Download Excel</button>
         </td>
       </tr>
     `).join('');
@@ -83,6 +90,84 @@ async function loadRequests() {
     tbody.innerHTML = `<tr><td colspan="10">Could not connect to the server.</td></tr>`;
   }
 }
+
+async function editRequest(id) {
+  const r = currentRequests.find(req => req.id === id);
+  if (!r) {
+    alert('Request not found.');
+    return;
+  }
+
+  const reporter_name = prompt('Reporter name:', r.reporter_name);
+  if (reporter_name === null) return; // cancelled
+
+  const contact_info = prompt('Contact info:', r.contact_info || '');
+  if (contact_info === null) return;
+
+  const equipment_name = prompt('Equipment name:', r.equipment_name);
+  if (equipment_name === null) return;
+
+  const location = prompt('Location:', r.location);
+  if (location === null) return;
+
+  let priority = prompt('Priority (low / medium / high):', r.priority);
+  if (priority === null) return;
+  priority = priority.trim().toLowerCase();
+  if (!['low', 'medium', 'high'].includes(priority)) {
+    alert('Priority must be low, medium or high. Edit cancelled.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/requests/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ reporter_name, contact_info, equipment_name, location, priority })
+    });
+    if (res.status === 401 || res.status === 403) return handleAuthError();
+    if (!res.ok) {
+      alert('Could not update request.');
+      return;
+    }
+    alert('Request updated.');
+    loadRequests();
+  } catch (err) {
+    console.error(err);
+    alert('Could not update request.');
+  }
+}
+
+function downloadExcel(id) {
+  const r = currentRequests.find(req => req.id === id);
+  if (!r) {
+    alert('Request not found.');
+    return;
+  }
+
+  const rows = [
+    { Field: 'Reference Code', Value: r.reference_code },
+    { Field: 'Reporter Name', Value: r.reporter_name },
+    { Field: 'Contact Info', Value: r.contact_info || '-' },
+    { Field: 'Equipment', Value: r.equipment_name },
+    { Field: 'Location', Value: r.location },
+    { Field: 'Priority', Value: r.priority },
+    { Field: 'Status', Value: r.status.replace('_', ' ') },
+    { Field: 'Date Submitted', Value: new Date(r.created_at).toLocaleString() },
+    { Field: 'Technician Notes', Value: r.technician_notes || '-' }
+  ];
+
+  const worksheet = XLSX.utils.json_to_sheet(rows, { skipHeader: true });
+  worksheet['!cols'] = [{ wch: 20 }, { wch: 40 }];
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Request');
+
+  XLSX.writeFile(workbook, `${r.reference_code}.xlsx`);
+}
+
 async function saveNotes(id) {
   const notes = document.getElementById(`notes-${id}`).value;
   try {
